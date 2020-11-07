@@ -1,20 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import Menu from './components/menu.component'
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
+
 import './App.css';
 
 function App() {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <h2> Minesweeper </h2>
-      </header>
+    <Router>
+      <Switch>
+        <Route exact path="/">
+          <Menu />
+        </Route>
+      </Switch>
+    </Router>
+  )
 
-      <h2> New </h2>
-      <h2> Load </h2>
-
-    </div>
-  );
 }
 
 export default App;
