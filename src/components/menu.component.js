@@ -11,8 +11,8 @@ const Menu = props => {
 		    <h2> Minesweeper </h2>
 		  </header>
 
-		  <h2> New </h2>
-		  <h2> Load </h2>
+		  <Link to="/new"><h2> New Game </h2></Link>
+
 		</div>
 	)
 

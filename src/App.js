@@ -1,5 +1,6 @@
 import React from 'react';
-import Menu from './components/menu.component'
+import Menu        from './components/menu.component'
+import NewGameForm from './components/new-game-form.component'
 import {
   BrowserRouter as Router,
   Switch,
@@ -16,6 +17,9 @@ function App() {
       <Switch>
         <Route exact path="/">
           <Menu />
+        </Route>
+        <Route exact path="/new">
+          <NewGameForm />
         </Route>
       </Switch>
     </Router>
