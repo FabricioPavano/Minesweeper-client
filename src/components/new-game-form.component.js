@@ -4,44 +4,48 @@ import { Link } from "react-router-dom";
 import '../styles/GameForm.css';
 
 
-const NewGameForm = props => {
+class NewGameForm extends Component {
 
-	return (
-		<div className="game-form">
-		  <div className="form-label">
-		  	Rows
-		  </div>
+	createNewGame = () => {
 
-		  <div className="input-wrapper">
-		  	<input type="text"></input>
-		  </div>
+	}
 
-		  <div className="form-label">
-		  	Columns
-		  </div>
+	render(){
+		return (
+			<div className="game-form">
+			  <div className="form-label">
+			  	Rows
+			  </div>
 
-		  <div className="input-wrapper">
-		  	<input type="text"></input>
-		  </div>
+			  <div className="input-wrapper">
+			  	<input type="text"></input>
+			  </div>
 
+			  <div className="form-label">
+			  	Columns
+			  </div>
 
-		  <div className="form-label">
-		  	Mines
-		  </div>
-
-		  <div className="input-wrapper">
-		  	<input type="text"></input>
-		  </div>
-		  <br />
+			  <div className="input-wrapper">
+			  	<input type="text"></input>
+			  </div>
 
 
-		  <div className="form-label">
-		  	<Link to="/create"> Start!</Link>
-		  </div>
+			  <div className="form-label">
+			  	Mines
+			  </div>
 
+			  <div className="input-wrapper">
+			  	<input type="text"></input>
+			  </div>
+			  <br />
 
-		</div>
-	)
+			  <div className="form-label">
+			  	<a onClick={ () => this.createNewGame() }> Start! </a>
+			  </div>
+			</div>
+		)
+	}
+	
 
 }
 
