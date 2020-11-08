@@ -1,6 +1,7 @@
 import React from 'react';
 import Menu        from './components/menu.component'
 import NewGameForm from './components/new-game-form.component'
+import MineSweeper from './components/minesweeper.component'
 import {
   BrowserRouter as Router,
   Switch,
@@ -16,10 +17,13 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/">
-          <Menu />
+            <Menu />
         </Route>
         <Route exact path="/new">
           <NewGameForm />
+        </Route>
+        <Route exact path="/play/:uuid">
+          <MineSweeper />
         </Route>
       </Switch>
     </Router>

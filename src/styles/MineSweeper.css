@@ -1,0 +1,112 @@
+.minesweeper-container{
+	margin-top: 100px;
+	display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.row{
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	align-items: flex-start;
+	align-content: flex-start;
+	margin: 0 auto;
+	border-right:2px solid black;
+	border-left:2px solid black;
+}
+
+.row:first-of-type{
+	border-top:2px solid black;
+}
+
+.row:last-of-type{
+	border-bottom:2px solid black;
+}
+
+/* Boxes */
+.box{
+	box-sizing: border-box;
+	flex-basis:30px;
+	min-width: 30px;
+	height: 30px;
+	/*border: 1px solid #3b3b3b;*/
+}
+
+.box.covered{
+	background-color: #BFBFBF;
+	border-top: 5px outset #EEE;
+	border-left: 5px outset #EEE;
+	border-right: 5px outset #BFBFBF;
+	border-bottom: 5px outset #BFBFBF;
+}
+
+.box.covered:hover{
+	/* Color strong #7B7B7B */
+	/* Color light  #FFFFFF */
+}
+
+.box.uncovered{
+	background-color: #BDBDBD;
+	border: 2px solid #727272;
+
+}
+
+
+.box.uncovered.mine{
+	background-color: #FF0100;
+	border: 0px;
+	background: url("../red-mine.png");
+	background-size: 50px;
+	background-position-x: -9px;
+	background-position-y: -4px;
+	background-repeat: no-repeat;
+}
+
+
+
+
+
+
+/* COLORS */
+
+[data-color="color-1"] {
+  color: blue;
+}
+
+[data-color="color-2"] {
+  color: blue;
+}
+
+[data-color="color-3"] {
+  color: blue;
+}
+
+[data-color="color-4"] {
+  color: blue;
+}
+
+[data-color="color-5"] {
+  color: blue;
+}
+
+[data-color="color-6"] {
+  color: blue;
+}
+
+[data-color="color-7"] {
+  color: blue;
+}
+
+[data-color="color-8"] {
+  color: blue;
+}
+
+[data-color="color-null"] {
+  color: transparent;
+}
+
+
+
+

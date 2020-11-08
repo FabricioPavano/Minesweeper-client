@@ -1,12 +1,53 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
+import { withRouter } from 'react-router-dom'
 import '../styles/GameForm.css';
 
 
 class NewGameForm extends Component {
 
+
+	constructor(props) {
+	  super(props);
+	  this.state = {
+	    cols: 10,
+	    rows: 10,
+	    mines:10
+	  };
+
+	  this.handleInputChange = this.handleInputChange.bind(this);
+	}
+
+	handleInputChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+
+    this.setState({
+      [name]: value
+    });
+  }
+
 	createNewGame = () => {
+
+		console.log('Starting New Game...');
+
+		const options =  {
+		  method: 'post',
+		  headers:  {
+	      "Content-Type": "application/json",
+	      "Accept": "application/json"
+   		},
+   		body: JSON.stringify(this.state)
+   	}
+
+		fetch('http://localhost:3000/games', options).then( (response) => {
+		  return response.json();
+		})
+		.then( (data) => {
+		  this.props.history.push('/play/' + data.uuid)
+		});
 
 	}
 
@@ -18,7 +59,12 @@ class NewGameForm extends Component {
 			  </div>
 
 			  <div className="input-wrapper">
-			  	<input type="text"></input>
+			  	<input
+			  		name="rows"
+			  	  type="text"
+			  	  value={ this.state.rows }
+			  	  onChange={this.handleInputChange}
+			  	/>
 			  </div>
 
 			  <div className="form-label">
@@ -26,7 +72,12 @@ class NewGameForm extends Component {
 			  </div>
 
 			  <div className="input-wrapper">
-			  	<input type="text"></input>
+			  	<input
+			  		name="cols"
+			  	  type="text"
+			  	  value={ this.state.cols }
+			  	  onChange={this.handleInputChange}
+			  	/>
 			  </div>
 
 
@@ -35,7 +86,12 @@ class NewGameForm extends Component {
 			  </div>
 
 			  <div className="input-wrapper">
-			  	<input type="text"></input>
+			  	<input
+			  		name="mines"
+			  	  type="text"
+			  	  value={ this.state.mines }
+			  	  onChange={this.handleInputChange}
+			  	/>
 			  </div>
 			  <br />
 
@@ -45,8 +101,7 @@ class NewGameForm extends Component {
 			</div>
 		)
 	}
-	
 
 }
 
-export default NewGameForm;
+export default withRouter(NewGameForm);
