@@ -17,10 +17,16 @@ class Box extends Component {
 
 	uncoverBox(){
 
+		// Does not allow you to continue playing if game has ended
+		if(this.props.game_ended){
+			return
+		}
+
 		// Checks if there's a mine in the box
 
 		if(this.props.has_mine){
 			this.setState({ status: 'uncovered mine'})
+			this.props.endGame()
 		}
 		else{
 			this.setState({ status: 'uncovered', value: this.props.adjacent })
@@ -30,9 +36,15 @@ class Box extends Component {
 
 	render(){
 		return (
-			<div onClick={ this.uncoverBox } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.state.status} >
-				{ this.state.value }
-			</div>
+			<React.Fragment>
+				<div onClick={ this.uncoverBox } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.state.status} >
+					{ this.state.value }
+				</div>
+				<br />
+				{ this.state.game && this.state.game.ended && (
+					<div> Game Over! </div>
+				)}
+			</React.Fragment>
 		)
 	}
 

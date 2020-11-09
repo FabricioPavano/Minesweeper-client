@@ -15,13 +15,12 @@ class Minesweeper extends Component {
 	  super(props);
 
 	  this.saveGame  = this.saveGame.bind(this)
+	  this.endGame   = this.endGame.bind(this)
 
 	  this.state = {
 	  	game: {},
 	  	boxes: []
 	  };
-
-	
 
 	}
 
@@ -42,13 +41,15 @@ class Minesweeper extends Component {
 
 			let boxes_object = {}
 
-			// // Boxes come in an Array
-			// // For faster lookups - this script stores the info in an object
-			// // Which acts like a Hash - providing O(1) lookups
+			// Boxes come in an Array
+			// For faster lookups - this script stores the info in an object
+			// Which acts like a Hash - providing O(1) lookups
 
 			for (const box of boxes) {
 				boxes_object[box.row + ':' + box.col] = box
 			}
+
+			localStorage.setItem(data.uuid, JSON.stringify(data))
 
 			this.setState({
 				game: data,
@@ -95,7 +96,34 @@ class Minesweeper extends Component {
 
 	}
 
+	// Updates the state of the game as the game progresses
+	// The state of the game is kept on a javascript object
 
+	// each affected box is is represented by an object:
+	/*
+	{
+		row: n,
+		col: m,
+		new_state: x
+	}
+	*/
+
+	// If the parameter receives is an array we apply multiple changes
+	// to the state of the game sequentially
+
+	// It can also receive a single object
+	updateState(affectedBoxes){
+
+
+
+	}
+
+	endGame(){
+		this.setState({ game: Object.assign({ended:true}, this.state.game)}, () => {
+			console.log(this.state)
+		})
+
+	}
 
 	renderRow(row_number){
 		let total_columns = this.state.game.cols
@@ -114,6 +142,9 @@ class Minesweeper extends Component {
 			          status={box.status}
 			          has_mine={ box.has_mine }
 			          adjacent={ box.adjacent }
+			          game_ended={ this.state.game.ended }
+			          updateState={ this.state.updateState }
+			          endGame={ this.endGame }
 			        />
 		})
 
@@ -122,6 +153,9 @@ class Minesweeper extends Component {
 
 
 	render(){
+
+
+		console.log('Rendering!')
 
 		// Stores JSX boxes inside:
 		var rows = [];
@@ -134,13 +168,32 @@ class Minesweeper extends Component {
 		}
 
 		return (
-			<div className="minesweeper-container">
-					{ rows.map( (row, index) => {
+			<React.Fragment>
+				<div className="minesweeper-container">
+						{ rows.map( (row, index) => {
 
-						let key = 'row' + index
-						return <div key={key}  className={'row'}> {row} </div>
-					})}
-			</div>
+							let key = 'row' + index
+							return <div key={key}  className={'row'}> {row} </div>
+						})}
+				</div>
+
+				{ this.state.game && this.state.game.ended && (
+
+					<React.Fragment>
+						<br />
+						<div className='game-over'> Game Over! </div>
+
+						<br />
+						<br />
+						<div className='game-over-item'> -retry- </div>
+						<br />
+						<div className='game-over-item'>		  <Link to="/"> -exit- </Link></div>
+
+					</React.Fragment>
+
+				)}
+			</React.Fragment>
+
 		)
 	}
 

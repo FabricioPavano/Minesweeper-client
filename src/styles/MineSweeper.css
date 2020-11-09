@@ -72,6 +72,27 @@
 
 
 
+.game-over{
+	text-align: center;
+  font-size: 45px;
+  font-weight: bold;
+  color: tomato;
+}
+
+
+.game-over-item{
+	text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: tomato;
+}
+
+.game-over-item a{
+	text-decoration: none !important;
+	color: inherit !important;
+}
+
+
 
 /* COLORS */
 
