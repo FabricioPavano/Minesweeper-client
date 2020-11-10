@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
 import { withRouter } from 'react-router-dom'
+import SimpleReactValidator from 'simple-react-validator';
+import API  from '../services/api'
 import '../styles/UserForm.css';
 
 
@@ -16,6 +18,7 @@ class SignUp extends Component {
 	  };
 
 	  this.handleInputChange = this.handleInputChange.bind(this);
+	  this.validator = new SimpleReactValidator();
 	}
 
 	handleInputChange(event) {
@@ -30,22 +33,19 @@ class SignUp extends Component {
 
 	createUser = () => {
 
-		const options =  {
-		  method: 'post',
-		  headers:  {
-	      "Content-Type": "application/json",
-	      "Accept": "application/json"
-   		},
-   		body: JSON.stringify(this.state)
-   	}
 
-		fetch('http://localhost:3000/users', options).then( (response) => {
-		  return response.json();
-		})
-		.then( (data) => {
-			console.log('data', data)
-		  this.props.history.push('/signin')
-		});
+		// Does some basic validation first
+
+		if (this.validator.allValid()) {
+		  API.sign_up(this.state)
+		  	.then( (data) => {
+		  		console.log('data', data)
+		  	  this.props.history.push('/signin')
+		  	});
+		} else {
+		  this.validator.showMessages();
+		  this.forceUpdate();
+		}
 
 	}
 
@@ -65,6 +65,8 @@ class SignUp extends Component {
 			  	/>
 			  </div>
 
+			  { this.validator.message('email', this.state.email, 'required|email') }
+
 			  <div className="form-label">
 			  	Password
 			  </div>
@@ -77,6 +79,8 @@ class SignUp extends Component {
 			  	  onChange={this.handleInputChange}
 			  	/>
 			  </div>
+
+			  { this.validator.message('password', this.state.password, 'required|min:6') }
 
 			  <br />
 

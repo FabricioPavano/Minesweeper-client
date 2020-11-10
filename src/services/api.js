@@ -66,8 +66,7 @@ class API{
 	static save_game(game_state, boxes_state_array){
 
 		var myHeaders = new Headers();
-		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token']);
-
+		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token'])
 		myHeaders.append("Content-Type", "application/json")
 		myHeaders.append("Accept", "application/json")
 
@@ -82,6 +81,52 @@ class API{
 		  return response.json();
 		})
 	}
+
+
+	static sign_up(data){
+
+		var myHeaders = new Headers();
+		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token'])
+		myHeaders.append("Content-Type", "application/json")
+		myHeaders.append("Accept", "application/json")
+
+		const options =  {
+		  method: 'PUT',
+		  headers: myHeaders,
+   		body: JSON.stringify(data)
+   	}
+
+		return fetch( process.env.REACT_APP_BACKEND_URL + '/users', options).then( (response) => {
+		  return response.json();
+		})
+
+	}
+
+	static sign_in(data){
+
+		var myHeaders = new Headers();
+		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token'])
+		myHeaders.append("Content-Type", "application/json")
+		myHeaders.append("Accept", "application/json")
+
+
+		var requestOptions = {
+		  method: 'POST',
+		  headers: myHeaders,
+		  body: JSON.stringify(data),
+		  redirect: 'follow'
+		};
+
+		return fetch( process.env.REACT_APP_BACKEND_URL + '/user_token', requestOptions)
+		  .then( (response) => {
+		    return response.json();
+		  })
+		  .catch( (error) => {
+		  	console.log('error', error)
+		  })
+
+	}
+
 
 }
 

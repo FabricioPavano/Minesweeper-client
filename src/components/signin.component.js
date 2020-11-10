@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
 import { withRouter } from 'react-router-dom'
+import SimpleReactValidator from 'simple-react-validator';
+import API  from '../services/api'
 import '../styles/UserForm.css';
 
 
@@ -12,10 +14,12 @@ class SignIn extends Component {
 	  super(props);
 	  this.state = {
 			email: '',
-			password: ''
+			password: '',
+			login_error: false
 	  };
 
 	  this.handleInputChange = this.handleInputChange.bind(this);
+	  this.validator = new SimpleReactValidator();
 	}
 
 	handleInputChange(event) {
@@ -30,41 +34,49 @@ class SignIn extends Component {
 
 	signIn = () => {
 
-		
-		var myHeaders = new Headers();
-		myHeaders.append("Content-Type", "application/json");
+		this.setState({ login_error: false })
 
-		var raw = JSON.stringify(
-			{"auth":
+		// Performs basic validation
+		if (this.validator.allValid()) {
+			var data = {'auth':
 			  {
-			  	"email":this.state.email,
-			    "password":this.state.password
+			  	'email' : this.state.email,
+			    'password': this.state.password
 			  }
-			});
+			};
 
-		var requestOptions = {
-		  method: 'POST',
-		  headers: myHeaders,
-		  body: raw,
-		  redirect: 'follow'
-		};
+		  API.sign_in(data)
+  		  .then(result => {
 
-		fetch("http://localhost:3000/user_token", requestOptions)
-		  .then( (response) => {
-		    return response.json();
-		  })
-		  .then(result => {
-		  	console.log(typeof result, result)
-		  	localStorage.setItem('minesweeper-token', result['jwt'])
-		  	this.props.history.push('/menu')
-		  })
-		  .catch(error => console.log('error', error));
+
+  		  	localStorage.setItem('minesweeper-token', result['jwt'])
+  		  	this.props.history.push('/menu')
+  		  })
+  		  .catch(error => this.setState({ login_error: true }));
+
+		} else {
+		  this.validator.showMessages();
+		  this.forceUpdate();
+		}
 
 	}
 
 	render(){
 		return (
+
+
+
+
 			<div className="user-form">
+
+				{ this.state.login_error && (
+
+					<div class="srv-validation-message">
+						User or password is incorrect.
+					</div>
+
+				)}
+
 			  <div className="form-label">
 			  	Email
 			  </div>
@@ -78,6 +90,9 @@ class SignIn extends Component {
 			  	/>
 			  </div>
 
+			   
+			  { this.validator.message('email', this.state.email, 'required|email') }
+
 			  <div className="form-label">
 			  	Password
 			  </div>
@@ -90,6 +105,8 @@ class SignIn extends Component {
 			  	  onChange={this.handleInputChange}
 			  	/>
 			  </div>
+
+			  { this.validator.message('password', this.state.password, 'required|min:6') }
 
 			  <br />
 
