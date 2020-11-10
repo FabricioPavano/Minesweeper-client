@@ -17,6 +17,7 @@ class Minesweeper extends Component {
 	  this.updateState  = this.updateState.bind(this)
 	  this.saveGame     = this.saveGame.bind(this)
 	  this.endGame      = this.endGame.bind(this)
+	  this.retry        = this.retry.bind(this)
 
 	  this.state = {
 	  	game: {},
@@ -41,8 +42,12 @@ class Minesweeper extends Component {
 
 			let state_hash = this.transformStateArrayToHash(state_array)
 
-			// saves the state on local storage too
+			// saves two copies of the state on local storage
+			// One for in-changes updates (allows to save the game at any moment)
 			localStorage.setItem(data.uuid, JSON.stringify(state_hash))
+
+			// An initial version (allows retries)
+			localStorage.setItem('initial-' + data.uuid, JSON.stringify(state_hash))
 
 			this.setState({
 				game: data,
@@ -119,6 +124,20 @@ class Minesweeper extends Component {
 
 	}
 
+	// Loads initial version of the game saved on local storage
+	retry(){
+		
+		console.log('called!')
+
+		let initail_state = JSON.parse(localStorage.getItem('initial-' + this.state.game.uuid))
+
+		console.log('is', initail_state)
+		this.setState( { boxes: initail_state,
+										 game: Object.assign(this.state.game, {ended:false}) }
+										 , () => console.log(this.state))
+
+	}
+
 	// Updates the state of the game as the game progresses, on local storage
 	// The state of the game is kept on a serialized javascript object
 
@@ -139,12 +158,9 @@ class Minesweeper extends Component {
 
 		let state = JSON.parse(localStorage.getItem(this.state.game.uuid))
 
-
 		// Applies the changes for each item of the array
 		// Notice setState is called only once for maximum performance
 		affectedBoxes.forEach( affectedBox => {
-
-			console.log('af', affectedBox)
 
 			let row = affectedBox.row
 			let col = affectedBox.col
@@ -157,9 +173,8 @@ class Minesweeper extends Component {
 			)
 		})
 
-		// saves the state on local storage too
+		// saves the state on local storage
 		localStorage.setItem(this.state.game.uuid, JSON.stringify(state))
-
 
 	}
 
@@ -167,7 +182,7 @@ class Minesweeper extends Component {
 
 
 	endGame(){
-		this.setState({ game: Object.assign({ended:true}, this.state.game)}, () => {
+		this.setState({ game: Object.assign(this.state.game, {ended:true} )}, () => {
 			console.log(this.state)
 		})
 
@@ -267,9 +282,9 @@ class Minesweeper extends Component {
 
 						<br />
 						<br />
-						<div className='game-over-item'> -retry- </div>
+						<div className='game-over-item' onClick={ this.retry } > -retry- </div>
 						<br />
-						<div className='game-over-item'>		  <Link to="/"> -exit- </Link></div>
+						<div className='game-over-item'> <Link to="/"> -exit- </Link></div>
 
 					</React.Fragment>
 

@@ -35,43 +35,47 @@ class Box extends Component {
 			this.props.endGame()
 		}
 		else{
-
-			// Updates state on general game (does not cause a re-render)
-			this.props.updateState([
-															{ row: this.props.row,
-				                       col: this.props.col,
-				                       new_status: 'uncovered'
-				                     },
-         											{ row: this.props.row + 1,
-                                col: this.props.col,
-                                new_status: 'uncovered'
-                              } ]
-				                     )
-
 			// Updates state on this particular box
 			this.setState({ status: 'uncovered', value: this.props.adjacent })
 		}
 
 	}
 
+	shouldComponentUpdate(nextProps){
+
+		// change state when retrying
+		if(nextProps.game_ended == false && this.props.game_ended == true){
+			
+		}
+
+
+		return true
+	}
+
+
 	componentDidUpdate(prevProps, prevState) {
 
-		//Change status if prop changed
-	  if (this.props.status !== prevProps.status) {
-	    this.setState( { 'status': this.props.status })
-	  }
+		// change state when retrying
+		if(prevProps.game_ended == true && this.props.game_ended == false){
+			if( (prevState.status != this.props.status) && this.props.status == 'covered'){
+				this.setState({
+					status: 'covered',
+					value: ''
+				})
+			}
+			else if (prevState.status != this.props.status) {
+				this.setState({
+					status:this.props.status
+				})
+			}
+		}
 
-	  if (this.props.status != 'covered' && prevState.status == 'covered')
-	  	this.setState( { 'value': this.props.adjacent })
+		
 
 	}
 
 
 	render(){
-
-
-
-		console.info('Box rendered')
 
 		return (
 			<React.Fragment>
