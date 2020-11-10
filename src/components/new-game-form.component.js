@@ -95,7 +95,7 @@ class NewGameForm extends Component {
 			  </div>
 			  <br />
 
-			  <div className="form-label">
+			  <div className="form-label start-game">
 			  	<a onClick={ () => this.createNewGame() }> Start! </a>
 			  </div>
 			</div>

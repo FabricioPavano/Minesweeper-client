@@ -21,3 +21,7 @@
 	margin-bottom: 20px;
 	text-align: center;
 }
+
+.start-game{
+	cursor: pointer;
+}

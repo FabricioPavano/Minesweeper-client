@@ -1,11 +1,17 @@
+// Dependencies
 import React, { Component } from 'react';
-import Box from './box.component.js';
-
 import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
 import { withRouter } from 'react-router-dom'
 import YAML from 'yaml'
 
+// Components
+import Box from './box.component.js';
+
+// Images
+import save_game_icon from '../save-icon.jpeg';
+
+// Styles
 import '../styles/MineSweeper.css';
 
 
@@ -90,44 +96,38 @@ class Minesweeper extends Component {
 
 	saveGame(){
 
-		return
-		// Proof of concept, I want to make sure I can change state and succesfully
-		// send it to the server, have it saved there.
-		// Then load it again
-		// A full cycle
 
-		let gameState = this.state.game.state;
 
-		gameState[13]['status'] = 'uncovered'
+		let boxes_state = JSON.parse(localStorage.getItem(this.state.game.uuid))
 
-		this.setState(Object.assign({ game: {state: gameState }}, this.state), () => {
+		let boxes_state_array = this.transformStateHashToArray(boxes_state)
 
-			let yaml_state = YAML.stringify(gameState)
 
-			const options =  {
-			  method: 'PUT',
-			  headers:  {
-		      "Content-Type": "application/json",
-		      "Accept": "application/json"
-	   		},
-	   		body: JSON.stringify(this.state.game)
-	   	}
+		let game_state  = this.state.game
+		let full_state = Object.assign(boxes_state_array, game_state, {})
 
-			fetch('http://localhost:3000/games/' + this.state.game.uuid, options).then( (response) => {
-			  return response.json();
-			})
-			.then( (data) => {
-			  this.setState({ game: data });
-			});
+		// let yaml_state = YAML.stringify(gameState)
 
+		const options =  {
+		  method: 'PUT',
+		  headers:  {
+	      "Content-Type": "application/json",
+	      "Accept": "application/json"
+   		},
+   		body: JSON.stringify({game: game_state, state: boxes_state_array})
+   	}
+
+		fetch('http://localhost:3000/games/' + this.state.game.uuid, options).then( (response) => {
+		  return response.json();
 		})
+		.then( (data) => {
+			this.props.history.push('/')
+		});
 
 	}
 
 	// Loads initial version of the game saved on local storage
 	retry(){
-		
-		console.log('called!')
 
 		let initail_state = JSON.parse(localStorage.getItem('initial-' + this.state.game.uuid))
 
@@ -278,17 +278,28 @@ class Minesweeper extends Component {
 
 					<React.Fragment>
 						<br />
-						<div className='game-over'> Game Over! </div>
+						<div className='options'> Game Over! </div>
 
 						<br />
 						<br />
-						<div className='game-over-item' onClick={ this.retry } > -retry- </div>
+						<div className='option-item' onClick={ this.retry } > -retry- </div>
 						<br />
-						<div className='game-over-item'> <Link to="/"> -exit- </Link></div>
-
+						<div className='option-item'> <Link to="/"> -exit- </Link></div>
 					</React.Fragment>
 
 				)}
+
+				{ (this.state.game && !this.state.game.ended) &&
+					<React.Fragment>
+						<br />
+						<br />
+						<br />
+						<br />
+						<div className='option-item' onClick={ this.saveGame } > -save- </div>
+						<br />
+						<div className='option-item'> <Link to="/"> -exit- </Link></div>
+					</React.Fragment>
+				}
 			</React.Fragment>
 
 		)

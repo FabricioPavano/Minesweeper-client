@@ -28,30 +28,23 @@ class Box extends Component {
 			return
 		}
 
-		// Checks if there's a mine in the box
+		this.props.updateState([{
+			row: this.props.row,
+			col: this.props.col,
+			new_status: 'uncovered'
+		}])
 
+		// Checks if there's a mine in the box
 		if(this.props.has_mine){
 			this.setState({ status: 'uncovered mine'})
 			this.props.endGame()
 		}
 		else{
 			// Updates state on this particular box
-			this.setState({ status: 'uncovered', value: this.props.adjacent })
+			this.setState({ status: 'uncovered'})
 		}
 
 	}
-
-	shouldComponentUpdate(nextProps){
-
-		// change state when retrying
-		if(nextProps.game_ended == false && this.props.game_ended == true){
-			
-		}
-
-
-		return true
-	}
-
 
 	componentDidUpdate(prevProps, prevState) {
 
@@ -69,24 +62,15 @@ class Box extends Component {
 				})
 			}
 		}
-
-		
-
 	}
 
 
 	render(){
 
 		return (
-			<React.Fragment>
-				<div onClick={ this.uncoverBox } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.state.status} >
-					{ this.state.value }
-				</div>
-				<br />
-				{ this.state.game && this.state.game.ended && (
-					<div> Game Over! </div>
-				)}
-			</React.Fragment>
+			<div onClick={ this.uncoverBox } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.state.status} >
+				{ this.state.status == 'uncovered' ? this.props.adjacent : '' }
+			</div>
 		)
 	}
 

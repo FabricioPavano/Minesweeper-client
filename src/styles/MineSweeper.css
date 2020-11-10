@@ -68,11 +68,7 @@
 	background-repeat: no-repeat;
 }
 
-
-
-
-
-.game-over{
+.options{
 	text-align: center;
   font-size: 45px;
   font-weight: bold;
@@ -80,18 +76,26 @@
 }
 
 
-.game-over-item{
+.option-item{
 	text-align: center;
   font-size: 30px;
   font-weight: bold;
   color: tomato;
+  cursor: pointer;
 }
 
-.game-over-item a{
+.option-item a{
 	text-decoration: none !important;
 	color: inherit !important;
 }
 
+.save-game-icon{
+	width: 50px;
+	margin: 0 auto;
+	text-align: center;
+	display: block;
+	cursor: pointer;
+}
 
 
 /* COLORS */
