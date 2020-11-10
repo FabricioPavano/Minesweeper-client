@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import { Link } from "react-router-dom";
 
 const Welcome = () => {
+	
+
+	console.log(process.env)
+
 	return (
 		<div className="App">
 		  <header className="App-header">

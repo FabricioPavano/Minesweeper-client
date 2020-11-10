@@ -17,7 +17,7 @@ class API{
 		  redirect: 'follow'
 		};
 
-		return fetch("http://localhost:3000/games", requestOptions)
+		return fetch( process.env.REACT_APP_BACKEND_URL + "/games", requestOptions)
 		  .then(response => response.json())
 		  .catch(error => console.log('error', error));
 
@@ -38,7 +38,7 @@ class API{
    		body: JSON.stringify({ game: data })
    	}
 
-		return fetch('http://localhost:3000/games', options).then( (response) => {
+		return fetch( process.env.REACT_APP_BACKEND_URL + '/games', options).then( (response) => {
 		  return response.json();
 		})
 
@@ -56,7 +56,7 @@ class API{
 		  redirect: 'follow'
 		};
 
-		return fetch('http://localhost:3000/games/' + uuid, requestOptions)
+		return fetch( process.env.REACT_APP_BACKEND_URL + '/games/' + uuid, requestOptions)
 			.then( (response) => {
 			  return response.json();
 			})
@@ -78,7 +78,7 @@ class API{
    		body: JSON.stringify({game: game_state, state: boxes_state_array})
    	}
 
-		return fetch('http://localhost:3000/games/' + game_state.uuid, options).then( (response) => {
+		return fetch(process.env.REACT_APP_BACKEND_URL + '/games/' + game_state.uuid, options).then( (response) => {
 		  return response.json();
 		})
 	}
