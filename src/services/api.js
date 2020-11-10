@@ -26,16 +26,10 @@ class API{
 	static create_new_game(data){
 
 		var myHeaders = new Headers();
-		myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDUxMjMwODUsInN1YiI6MX0.nkgG9MHoJ2M7IPBycqP35uOVkXpE_HQbv8F4ljFrWtI");
+		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token']);
 
-		// var authHeaders = new Headers();
-		// authHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token']);
 		myHeaders.append("Content-Type", "application/json")
 		myHeaders.append("Accept", "application/json")
-
-		// console.log('headers', authHeaders)
-
-		console.log('here', JSON.stringify({ game: data }))
 
 
 		const options =  {
@@ -48,8 +42,45 @@ class API{
 		  return response.json();
 		})
 
+	}
 
 
+	static get_game_info(uuid){
+
+		var myHeaders = new Headers();
+		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token']);
+
+		var requestOptions = {
+		  method: 'GET',
+		  headers: myHeaders,
+		  redirect: 'follow'
+		};
+
+		return fetch('http://localhost:3000/games/' + uuid, requestOptions)
+			.then( (response) => {
+			  return response.json();
+			})
+			.catch(error => console.log('error', error));
+	}
+
+	static save_game(game_state, boxes_state_array){
+
+		var myHeaders = new Headers();
+		myHeaders.append("Authorization", "Bearer " + localStorage['minesweeper-token']);
+
+		myHeaders.append("Content-Type", "application/json")
+		myHeaders.append("Accept", "application/json")
+
+
+		const options =  {
+		  method: 'PUT',
+		  headers: myHeaders,
+   		body: JSON.stringify({game: game_state, state: boxes_state_array})
+   	}
+
+		return fetch('http://localhost:3000/games/' + game_state.uuid, options).then( (response) => {
+		  return response.json();
+		})
 	}
 
 }

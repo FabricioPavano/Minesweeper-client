@@ -8,7 +8,7 @@ const Welcome = () => {
 		    <h2> Minesweeper </h2>
 		  </header>
 
-		  <Link to="/login"><h2> Log in </h2></Link>
+		  <Link to="/signin"><h2> Log in </h2></Link>
 		  <Link to="/signup"><h2> Sign up </h2></Link>
 
 		</div>

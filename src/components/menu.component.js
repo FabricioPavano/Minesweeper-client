@@ -11,14 +11,12 @@ class Menu extends Component {
 	  this.state = {
 	  	savedGames: []
 	  };
-
-	  
 	}
 
 	componentDidMount(){
 		API.fetch_user_games()
-			.then(result => {
-				console.log('check' , result)
+			.then(response => {
+				this.setState({savedGames : response.result})
 			})
 	}
 

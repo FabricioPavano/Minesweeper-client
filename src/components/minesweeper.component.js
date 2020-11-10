@@ -8,6 +8,9 @@ import YAML from 'yaml'
 // Components
 import Box from './box.component.js';
 
+// Services
+import API from '../services/api'
+
 // Images
 import save_game_icon from '../save-icon.jpeg';
 
@@ -44,18 +47,13 @@ class Minesweeper extends Component {
 	componentDidMount(){
 		const uuid = this.props.match.params.uuid
 
-		fetch('http://localhost:3000/games/' + uuid)
-			.then( (response) => {
-			  return response.json();
-			})
+
+		API.get_game_info(uuid)
 			.then( (data) => {
 
 				let state_array = data.state
 
 				let state_hash = this.transformStateArrayToHash(state_array)
-
-
-				console.log('data', data )
 
 				this.setState({
 					game: Object.assign(this.state.game, data),
@@ -402,7 +400,7 @@ class Minesweeper extends Component {
 						<br />
 						<div className='option-item' onClick={ () => this.props.saveGame(this.state.boxes, this.state.game) } > -save- </div>
 						<br />
-						<div className='option-item'> <Link to="/"> -exit- </Link></div>
+						<div className='option-item'> <Link to="/menu"> -exit- </Link></div>
 					</React.Fragment>
 				}
 			</React.Fragment>
@@ -454,21 +452,10 @@ class MinesweeperContainer extends Component {
 
 		let boxes_state_array = this.transformStateHashToArray(boxes_hash)
 
-		const options =  {
-		  method: 'PUT',
-		  headers:  {
-	      "Content-Type": "application/json",
-	      "Accept": "application/json"
-   		},
-   		body: JSON.stringify({game: game_state, state: boxes_state_array})
-   	}
-
-		fetch('http://localhost:3000/games/' + game_state.uuid, options).then( (response) => {
-		  return response.json();
-		})
-		.then( (data) => {
-			this.props.history.push('/')
-		});
+		API.save_game(game_state, boxes_state_array)
+			.then( (data) => {
+				this.props.history.push('/menu')
+			});
 
 	}
 
@@ -476,8 +463,6 @@ class MinesweeperContainer extends Component {
 		var time = new Date(this.state.game.time_ellapsed * 1000).toISOString().substr(11, 8);
 		return time;
 	}
-
-
 
 	render() {
 		return (
