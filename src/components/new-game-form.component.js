@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
 import { withRouter } from 'react-router-dom'
+import API from '../services/api'
 import '../styles/GameForm.css';
 
 
 class NewGameForm extends Component {
-
 
 	constructor(props) {
 	  super(props);
@@ -17,6 +17,7 @@ class NewGameForm extends Component {
 	  };
 
 	  this.handleInputChange = this.handleInputChange.bind(this);
+	  this.createNewGame     = this.createNewGame.bind(this);
 	}
 
 	handleInputChange(event) {
@@ -31,23 +32,13 @@ class NewGameForm extends Component {
 
 	createNewGame = () => {
 
-		console.log('Starting New Game...');
+		console.log('Starting New Game...', this.state);
 
-		const options =  {
-		  method: 'post',
-		  headers:  {
-	      "Content-Type": "application/json",
-	      "Accept": "application/json"
-   		},
-   		body: JSON.stringify(this.state)
-   	}
 
-		fetch('http://localhost:3000/games', options).then( (response) => {
-		  return response.json();
-		})
-		.then( (data) => {
-		  this.props.history.push('/play/' + data.uuid)
-		});
+		API.create_new_game(this.state)
+			.then( (data) => {
+			  this.props.history.push('/play/' + data.uuid)
+			});
 
 	}
 

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
-
+import API  from '../services/api'
 
 class Menu extends Component {
 
@@ -12,14 +12,16 @@ class Menu extends Component {
 	  	savedGames: []
 	  };
 
-	  fetch('http://localhost:3000/games/')
-	  	.then((response) => {
-	  		return response.json();
-  		})
-  		.then( (data) => {
-  			this.setState({ savedGames: data.result})
-  		});
+	  
 	}
+
+	componentDidMount(){
+		API.fetch_user_games()
+			.then(result => {
+				console.log('check' , result)
+			})
+	}
+
 
 	// Some quick and dirty date formatting to make the saved game items
 	// look a bit better
