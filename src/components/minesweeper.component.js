@@ -28,10 +28,15 @@ class Minesweeper extends Component {
 	  this.saveGame                     = this.saveGame.bind(this)
 	  this.endGame                      = this.endGame.bind(this)
 	  this.retry                        = this.retry.bind(this)
+	  this.handleRightClick             = this.handleRightClick.bind(this)
 
 	  this.state = {
-	  	game: {},
-	  	boxes: []
+	  	game: {
+	  		used_flags: 0,
+	  		mines_flagged: 0
+	  	},
+	  	boxes: [],
+
 	  };
 
 	}
@@ -59,7 +64,7 @@ class Minesweeper extends Component {
 				localStorage.setItem('initial-' + data.uuid, JSON.stringify(state_hash))
 
 				this.setState({
-					game: data,
+					game: Object.assign(this.state.game, data),
 					boxes: state_hash
 				})
 
@@ -67,9 +72,48 @@ class Minesweeper extends Component {
 
 	}
 
-	shouldComponentUpdate(prevProps, prevState){
+	handleRightClick(e, row, col){
+		e.preventDefault();
 
-		return true
+		if(this.state.game.ended){
+			return
+		}
+
+		let box = this.state.boxes[row + ':' + col]
+
+		let used_flags = this.state.game.used_flags
+		let total_mines = this.state.game.mines
+		let mines_flagged = this.state.game.mines_flagged
+		let has_mine = box.has_mine
+
+		if(box.status == 'covered'){
+			// Does not allow to add more flags than mines on the game
+			if(used_flags == total_mines){
+				return
+			} else {
+
+				// check if box has a mine in it
+				if(has_mine){
+
+					// Check if user won the game
+					if(mines_flagged == total_mines - 1){
+						this.endGame()
+					}
+
+					this.setState({ game: Object.assign(this.state.game, { mines_flagged: mines_flagged + 1})})
+
+				}
+
+				this.changeStatusOfBox(row,col,'flagged')
+				this.setState({ game: Object.assign(this.state.game, { used_flags: used_flags + 1})})
+
+			}
+		}
+
+		if(box.status == 'flagged'){
+			this.changeStatusOfBox(row,col,'covered')
+			this.setState({ game: Object.assign(this.state.game, { used_flags: used_flags - 1})})
+		}
 	}
 
 
@@ -153,7 +197,6 @@ class Minesweeper extends Component {
 	// function in charge of actually changing the state of a specific box
 	changeStatusOfBox(row, col, status){
 
-
 		this.setState((prevState) => {
 
 			var newBoxes = prevState.boxes
@@ -203,9 +246,6 @@ class Minesweeper extends Component {
 	// whereas the other one is only called when the user clicks on the box
 	programaticallyUncoverBoxes(boxes){
 
-
-		console.log('PU called')
-
 		this.setState((prevState) => {
 
 			var newBoxes = prevState.boxes
@@ -218,7 +258,10 @@ class Minesweeper extends Component {
 				let col = box.col
 				let hash_key = row + ':' + col
 
-				newBoxes[hash_key] = Object.assign(newBoxes[hash_key], { status: 'uncovered' })
+
+				if(newBoxes[hash_key]['status'] == 'covered' ){
+					newBoxes[hash_key] = Object.assign(newBoxes[hash_key], { status: 'uncovered' })
+				}
 
 			})
 
@@ -334,11 +377,8 @@ class Minesweeper extends Component {
 			          status={box.status}
 			          has_mine={ box.has_mine }
 			          adjacent={ box.adjacent }
-			          game_ended={ this.state.game.ended }
 			          manuallyUncoverBox={ this.manuallyUncoverBox }
-			          updateLocalStorageState={ this.updateLocalStorageState }
-			          discoverNearByMines= { this.discoverNearByMines }
-			          endGame={ this.endGame }
+			          handleRightClick={ this.handleRightClick }
 			        />
 		})
 
@@ -393,8 +433,14 @@ class Minesweeper extends Component {
 		  rows.push(this.renderRow(current_row))
 		}
 
+
+		console.log('state', this.state)
+
 		return (
 			<React.Fragment>
+
+				<div className='used-flags'> Used Flags: {this.state.game.used_flags} / {this.state.game.mines} </div>
+
 				<div className="minesweeper-container">
 						{ rows.map( (row, index) => {
 
@@ -407,7 +453,14 @@ class Minesweeper extends Component {
 
 					<React.Fragment>
 						<br />
-						<div className='options'> Game Over! </div>
+
+						{ this.state.game.mines_flagged == this.state.game.mines &&
+							<div className='options'> Congratulations! </div>
+						}
+
+						{ this.state.game.mines_flagged < this.state.game.mines &&
+							<div className='options'> Game over! </div>
+						}
 
 						<br />
 						<br />
