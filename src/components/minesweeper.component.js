@@ -20,10 +20,14 @@ class Minesweeper extends Component {
 	constructor(props) {
 	  super(props);
 
-	  this.updateState  = this.updateState.bind(this)
-	  this.saveGame     = this.saveGame.bind(this)
-	  this.endGame      = this.endGame.bind(this)
-	  this.retry        = this.retry.bind(this)
+	  this.discoverNearByMines          = this.discoverNearByMines.bind(this)
+	  this.changeStatusOfBox            = this.changeStatusOfBox.bind(this)
+	  this.manuallyUncoverBox           = this.manuallyUncoverBox.bind(this)
+	  this.programaticallyUncoverBoxes  = this.programaticallyUncoverBoxes.bind(this)
+	  this.updateLocalStorageState      = this.updateLocalStorageState.bind(this)
+	  this.saveGame                     = this.saveGame.bind(this)
+	  this.endGame                      = this.endGame.bind(this)
+	  this.retry                        = this.retry.bind(this)
 
 	  this.state = {
 	  	game: {},
@@ -32,35 +36,34 @@ class Minesweeper extends Component {
 
 	}
 
-	
 
 	componentDidMount(){
 		const uuid = this.props.match.params.uuid
 
 		fetch('http://localhost:3000/games/' + uuid)
-		.then( (response) => {
-		  return response.json();
-		})
-		.then( (data) => {
-
-
-			let state_array = data.state
-
-			let state_hash = this.transformStateArrayToHash(state_array)
-
-			// saves two copies of the state on local storage
-			// One for in-changes updates (allows to save the game at any moment)
-			localStorage.setItem(data.uuid, JSON.stringify(state_hash))
-
-			// An initial version (allows retries)
-			localStorage.setItem('initial-' + data.uuid, JSON.stringify(state_hash))
-
-			this.setState({
-				game: data,
-				boxes: state_hash
+			.then( (response) => {
+			  return response.json();
 			})
+			.then( (data) => {
 
-		})
+
+				let state_array = data.state
+
+				let state_hash = this.transformStateArrayToHash(state_array)
+
+				// saves two copies of the state on local storage
+				// One for in-changes updates (allows to save the game at any moment)
+				localStorage.setItem(data.uuid, JSON.stringify(state_hash))
+
+				// An initial version (allows retries)
+				localStorage.setItem('initial-' + data.uuid, JSON.stringify(state_hash))
+
+				this.setState({
+					game: data,
+					boxes: state_hash
+				})
+
+			})
 
 	}
 
@@ -93,10 +96,141 @@ class Minesweeper extends Component {
 		return state_array;
 	}
 
+	// This algorithm gets triggered when an empty box is clicked
+	// it looks recursively on adjacent boxes until it finds a box
+	// with a number on it
+	// This method stores the boxes already explored in an array
+	// in order to avoid an infinite loop of exploring
+	discoverNearByMines(central_box, explored_boxes){
+
+		console.log('central box ', central_box.row, central_box.col);
+
+		// Check if this box has been explored already
+		// if it is stop execution (avoids infinite loops)
+
+		var item_found = explored_boxes.find(box => box.row == central_box.row && box.col == central_box.col);
+
+		if(typeof item_found != "undefined"){
+			return
+		}
+		else{
+			explored_boxes.push(central_box)
+		}
+
+		// Gets all adjacent boxes
+
+	  // This array contains how many rows and columns should we move left or right
+		// in order to find all 8 adjacent boxes
+		var deltas_array = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+
+		var adjacent_boxes = deltas_array.map( (delta_array) => {
+
+			let next_box_row = central_box.row + delta_array[0]
+			let next_box_col = central_box.col + delta_array[1]
+			let next_box_key = next_box_row + ':' + next_box_col
+
+			return this.state.boxes[next_box_key]
+		})
+
+		// Once the algorithm reaches the edges it some of these boxes
+		// will be undefined, filter them
+
+		adjacent_boxes = adjacent_boxes.filter( (box) => typeof box != "undefined")
+
+		this.programaticallyUncoverBoxes(adjacent_boxes);
+
+		// now we run the same algorithm recursively, but only for the boxes
+		// with adjacent value = 0
+
+		var next_boxes = adjacent_boxes.filter( (box) => box.adjacent == 0 )
+
+		next_boxes.forEach( (box) => {
+			this.discoverNearByMines(box, explored_boxes)
+		})
+
+	}
+
+	// function in charge of actually changing the state of a specific box
+	changeStatusOfBox(row, col, status){
+
+
+		this.setState((prevState) => {
+
+			var newBoxes = prevState.boxes
+
+			let hash_key = row + ':' + col
+
+			newBoxes[hash_key] = Object.assign(newBoxes[hash_key], { status: status })
+
+			return { ...prevState, boxes: newBoxes }
+
+		})
+	}
+
+	manuallyUncoverBox(row, col, has_mine, adjacent){
+
+		// Does not allow you to continue playing if game has ended
+		if(this.state.game.ended){
+			return
+		}
+
+		// runs recursive method that searches boxes with numbers on it nearby
+		if(adjacent == 0){
+			this.discoverNearByMines({row: row, col: col, adjacent: 0}, [])
+		}
+
+		this.updateLocalStorageState([{
+			row: row,
+			col: col,
+			new_status: 'uncovered'
+		}])
+
+		// Checks if there's a mine in the box
+		if(has_mine){
+			this.changeStatusOfBox(row, col, 'uncovered mine')
+			this.endGame()
+		}
+		else{
+			// Updates state on this particular box
+			this.changeStatusOfBox(row, col, 'uncovered')
+		}
+
+
+	}
+
+	// This uncover method differs from the one implemented in the box component
+	// Because this one is only called by the discovery algorithm
+	// whereas the other one is only called when the user clicks on the box
+	programaticallyUncoverBoxes(boxes){
+
+
+		console.log('PU called')
+
+		this.setState((prevState) => {
+
+			var newBoxes = prevState.boxes
+
+			// Applies the changes for each item of the array
+			// Notice setState is called only once for maximum performance
+			boxes.forEach( box => {
+
+				let row = box.row
+				let col = box.col
+				let hash_key = row + ':' + col
+
+				newBoxes[hash_key] = Object.assign(newBoxes[hash_key], { status: 'uncovered' })
+
+			})
+
+			return { ...prevState, boxes: newBoxes }
+
+		})
+
+	}
+
+
 
 	saveGame(){
-
-
 
 		let boxes_state = JSON.parse(localStorage.getItem(this.state.game.uuid))
 
@@ -154,12 +288,11 @@ class Minesweeper extends Component {
 	// to the state of the game sequentially
 
 	// It can also receive a single object
-	updateState(affectedBoxes){
+	updateLocalStorageState(affectedBoxes){
 
 		let state = JSON.parse(localStorage.getItem(this.state.game.uuid))
 
 		// Applies the changes for each item of the array
-		// Notice setState is called only once for maximum performance
 		affectedBoxes.forEach( affectedBox => {
 
 			let row = affectedBox.row
@@ -178,14 +311,8 @@ class Minesweeper extends Component {
 
 	}
 
-
-
-
 	endGame(){
-		this.setState({ game: Object.assign(this.state.game, {ended:true} )}, () => {
-			console.log(this.state)
-		})
-
+		this.setState({ game: Object.assign(this.state.game, {ended:true} )})
 	}
 
 	renderRow(row_number){
@@ -208,7 +335,9 @@ class Minesweeper extends Component {
 			          has_mine={ box.has_mine }
 			          adjacent={ box.adjacent }
 			          game_ended={ this.state.game.ended }
-			          updateState={ this.updateState }
+			          manuallyUncoverBox={ this.manuallyUncoverBox }
+			          updateLocalStorageState={ this.updateLocalStorageState }
+			          discoverNearByMines= { this.discoverNearByMines }
 			          endGame={ this.endGame }
 			        />
 		})

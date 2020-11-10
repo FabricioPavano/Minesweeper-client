@@ -17,9 +17,6 @@ class Menu extends Component {
 	  		return response.json();
   		})
   		.then( (data) => {
-
-
-
   			this.setState({ savedGames: data.result})
   		});
 	}

@@ -7,15 +7,9 @@ class Box extends Component {
 	constructor(props) {
 	  super(props);
 
-	  this.uncoverBox  = this.uncoverBox.bind(this)
+	  this.renderNumberOfAdjacentMines = this.renderNumberOfAdjacentMines.bind(this)
+	  this.uncoverBox                  = this.uncoverBox.bind(this)
 
-	  // Every box keeps its own state to avoid having to re-render every time
-	  // some one clicks on a box
-
-	  this.state = {
-	  	status: this.props.status,
-	  	value: ''
-	  };
 	}
 
 
@@ -28,7 +22,12 @@ class Box extends Component {
 			return
 		}
 
-		this.props.updateState([{
+		// runs recursive method that searches boxes with numbers on it nearby
+		if(this.props.adjacent == 0){
+			this.props.discoverNearByMines({row: this.props.row, col: this.props.col, adjacent: 0})
+		}
+
+		this.props.updateLocalStorageState([{
 			row: this.props.row,
 			col: this.props.col,
 			new_status: 'uncovered'
@@ -47,29 +46,24 @@ class Box extends Component {
 	}
 
 	componentDidUpdate(prevProps, prevState) {
-
-		// change state when retrying
-		if(prevProps.game_ended == true && this.props.game_ended == false){
-			if( (prevState.status != this.props.status) && this.props.status == 'covered'){
-				this.setState({
-					status: 'covered',
-					value: ''
-				})
-			}
-			else if (prevState.status != this.props.status) {
-				this.setState({
-					status:this.props.status
-				})
-			}
-		}
 	}
 
+	// Renders number of adjacent mines unless is 0
+	renderNumberOfAdjacentMines(){
+		if(this.props.status == 'uncovered' && this.props.adjacent != 0){
+			return this.props.adjacent
+		}
+		else{
+			return null;
+		}
+
+	}
 
 	render(){
 
 		return (
-			<div onClick={ this.uncoverBox } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.state.status} >
-				{ this.state.status == 'uncovered' ? this.props.adjacent : '' }
+			<div onClick={ () => this.props.manuallyUncoverBox(this.props.row, this.props.col, this.props.has_mine, this.props.adjacent) } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.props.status} >
+				{ this.renderNumberOfAdjacentMines() }
 			</div>
 		)
 	}
