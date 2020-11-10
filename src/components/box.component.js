@@ -23,7 +23,6 @@ class Box extends Component {
 	}
 
 	render(){
-
 		return (
 			<div onClick={ () => this.props.manuallyUncoverBox(this.props.row, this.props.col, this.props.has_mine, this.props.adjacent) } 
 			     onContextMenu= { (e) => { this.props.handleRightClick(e, this.props.row, this.props.col) } }

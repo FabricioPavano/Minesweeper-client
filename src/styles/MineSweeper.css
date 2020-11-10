@@ -77,6 +77,15 @@
   background-image: url('../flag.png');
 }
 
+.box.question{
+	background-color: #BFBFBF;
+  background-repeat: no-repeat;
+  background-size: 28px;
+  background-position-x: 1px;
+  background-position-y: 1px;
+  background-image: url('../question-mark.png');
+}
+
 .options{
 	text-align: center;
   font-size: 45px;
@@ -93,6 +102,16 @@
   cursor: pointer;
   position: relative;
   top: 70px;
+}
+
+.time-ellapsed{
+		text-align: center;
+	  font-size: 20px;
+	  font-weight: bold;
+	  color: tomato;
+	  cursor: pointer;
+	  position: relative;
+	  top: 54px;
 }
 
 .option-item{

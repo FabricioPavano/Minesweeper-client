@@ -24,8 +24,7 @@ class Minesweeper extends Component {
 	  this.changeStatusOfBox            = this.changeStatusOfBox.bind(this)
 	  this.manuallyUncoverBox           = this.manuallyUncoverBox.bind(this)
 	  this.programaticallyUncoverBoxes  = this.programaticallyUncoverBoxes.bind(this)
-	  this.updateLocalStorageState      = this.updateLocalStorageState.bind(this)
-	  this.saveGame                     = this.saveGame.bind(this)
+
 	  this.endGame                      = this.endGame.bind(this)
 	  this.retry                        = this.retry.bind(this)
 	  this.handleRightClick             = this.handleRightClick.bind(this)
@@ -51,27 +50,26 @@ class Minesweeper extends Component {
 			})
 			.then( (data) => {
 
-
 				let state_array = data.state
 
 				let state_hash = this.transformStateArrayToHash(state_array)
 
-				// saves two copies of the state on local storage
-				// One for in-changes updates (allows to save the game at any moment)
-				localStorage.setItem(data.uuid, JSON.stringify(state_hash))
 
-				// An initial version (allows retries)
-				localStorage.setItem('initial-' + data.uuid, JSON.stringify(state_hash))
+				console.log('data', data )
 
 				this.setState({
 					game: Object.assign(this.state.game, data),
 					boxes: state_hash
 				})
 
+				this.props.renderGameInformation(Object.assign(this.state.game, data))
+
 			})
 
 	}
 
+	// This method makes sure the box goes from
+	// 'covered' to 'flagged' to 'question' to 'covered' again and so on
 	handleRightClick(e, row, col){
 		e.preventDefault();
 
@@ -111,9 +109,14 @@ class Minesweeper extends Component {
 		}
 
 		if(box.status == 'flagged'){
+			this.changeStatusOfBox(row,col,'question')
+		}
+
+		if(box.status == 'question'){
 			this.changeStatusOfBox(row,col,'covered')
 			this.setState({ game: Object.assign(this.state.game, { used_flags: used_flags - 1})})
 		}
+
 	}
 
 
@@ -129,25 +132,12 @@ class Minesweeper extends Component {
 	}
 
 
-	// In order to send the state back to the backend
-	// We transform the state back to an array
-	transformStateHashToArray(state_hash){
-		let state_array = []
-		for (const property in state_hash) {
-			// We don't mind keeping the order of the boxes
-			state_array.push(state_hash[property])
-		}
-		return state_array;
-	}
-
 	// This algorithm gets triggered when an empty box is clicked
 	// it looks recursively on adjacent boxes until it finds a box
 	// with a number on it
 	// This method stores the boxes already explored in an array
 	// in order to avoid an infinite loop of exploring
 	discoverNearByMines(central_box, explored_boxes){
-
-		console.log('central box ', central_box.row, central_box.col);
 
 		// Check if this box has been explored already
 		// if it is stop execution (avoids infinite loops)
@@ -212,6 +202,16 @@ class Minesweeper extends Component {
 
 	manuallyUncoverBox(row, col, has_mine, adjacent){
 
+
+		
+
+		let hash_key = row + ':' + col
+
+		console.log('check box', this.state.boxes[hash_key])
+
+		if(this.state.boxes[hash_key].status != 'covered')
+			return
+
 		// Does not allow you to continue playing if game has ended
 		if(this.state.game.ended){
 			return
@@ -221,12 +221,6 @@ class Minesweeper extends Component {
 		if(adjacent == 0){
 			this.discoverNearByMines({row: row, col: col, adjacent: 0}, [])
 		}
-
-		this.updateLocalStorageState([{
-			row: row,
-			col: col,
-			new_status: 'uncovered'
-		}])
 
 		// Checks if there's a mine in the box
 		if(has_mine){
@@ -273,84 +267,16 @@ class Minesweeper extends Component {
 
 
 
-	saveGame(){
-
-		let boxes_state = JSON.parse(localStorage.getItem(this.state.game.uuid))
-
-		let boxes_state_array = this.transformStateHashToArray(boxes_state)
-
-
-		let game_state  = this.state.game
-		let full_state = Object.assign(boxes_state_array, game_state, {})
-
-		// let yaml_state = YAML.stringify(gameState)
-
-		const options =  {
-		  method: 'PUT',
-		  headers:  {
-	      "Content-Type": "application/json",
-	      "Accept": "application/json"
-   		},
-   		body: JSON.stringify({game: game_state, state: boxes_state_array})
-   	}
-
-		fetch('http://localhost:3000/games/' + this.state.game.uuid, options).then( (response) => {
-		  return response.json();
-		})
-		.then( (data) => {
-			this.props.history.push('/')
-		});
-
-	}
+	
 
 	// Loads initial version of the game saved on local storage
 	retry(){
 
 		let initail_state = JSON.parse(localStorage.getItem('initial-' + this.state.game.uuid))
 
-		console.log('is', initail_state)
 		this.setState( { boxes: initail_state,
 										 game: Object.assign(this.state.game, {ended:false}) }
 										 , () => console.log(this.state))
-
-	}
-
-	// Updates the state of the game as the game progresses, on local storage
-	// The state of the game is kept on a serialized javascript object
-
-	// each affected box is is represented by an object:
-	/*
-	{
-		row: n,
-		col: m,
-		new_status: x
-	}
-	*/
-
-	// If the parameter receives is an array we apply multiple changes
-	// to the state of the game sequentially
-
-	// It can also receive a single object
-	updateLocalStorageState(affectedBoxes){
-
-		let state = JSON.parse(localStorage.getItem(this.state.game.uuid))
-
-		// Applies the changes for each item of the array
-		affectedBoxes.forEach( affectedBox => {
-
-			let row = affectedBox.row
-			let col = affectedBox.col
-			let hash_key = row + ':' + col
-			let new_status = affectedBox.new_status
-
-			state = Object.assign(
-				state,
-				{ [hash_key]: { ...state[hash_key], status: new_status } }
-			)
-		})
-
-		// saves the state on local storage
-		localStorage.setItem(this.state.game.uuid, JSON.stringify(state))
 
 	}
 
@@ -420,7 +346,6 @@ class Minesweeper extends Component {
 	  return true;
 	}
 
-
 	render(){
 
 		// Stores JSX boxes inside:
@@ -433,13 +358,12 @@ class Minesweeper extends Component {
 		  rows.push(this.renderRow(current_row))
 		}
 
-
-		console.log('state', this.state)
-
 		return (
 			<React.Fragment>
 
 				<div className='used-flags'> Used Flags: {this.state.game.used_flags} / {this.state.game.mines} </div>
+
+				
 
 				<div className="minesweeper-container">
 						{ rows.map( (row, index) => {
@@ -477,7 +401,7 @@ class Minesweeper extends Component {
 						<br />
 						<br />
 						<br />
-						<div className='option-item' onClick={ this.saveGame } > -save- </div>
+						<div className='option-item' onClick={ () => this.props.saveGame(this.state.boxes, this.state.game) } > -save- </div>
 						<br />
 						<div className='option-item'> <Link to="/"> -exit- </Link></div>
 					</React.Fragment>
@@ -489,4 +413,91 @@ class Minesweeper extends Component {
 
 }
 
-export default withRouter(Minesweeper);
+
+
+
+
+class MinesweeperContainer extends Component {
+
+	constructor(props) {
+	  super(props);
+
+	  this.saveGame              = this.saveGame.bind(this)
+	  this.renderGameInformation = this.renderGameInformation.bind(this)
+
+	  this.state = { game: {} }
+	}
+
+	// In order to send the state back to the backend
+	// We transform the state back to an array
+	transformStateHashToArray(state_hash){
+		let state_array = []
+		for (const property in state_hash) {
+			// We don't mind keeping the order of the boxes
+			state_array.push(state_hash[property])
+		}
+		return state_array;
+	}
+
+	renderGameInformation(game){
+
+		this.setState( { game: game }, () => { 
+
+			let intervalId = setInterval(() => {
+				this.setState( { game: Object.assign( game, { time_ellapsed: this.state.game.time_ellapsed  + 1 })})
+			}, 1000)
+
+		})
+
+	}
+
+	saveGame(boxes_hash, game_state){
+
+		let boxes_state_array = this.transformStateHashToArray(boxes_hash)
+
+		const options =  {
+		  method: 'PUT',
+		  headers:  {
+	      "Content-Type": "application/json",
+	      "Accept": "application/json"
+   		},
+   		body: JSON.stringify({game: game_state, state: boxes_state_array})
+   	}
+
+		fetch('http://localhost:3000/games/' + game_state.uuid, options).then( (response) => {
+		  return response.json();
+		})
+		.then( (data) => {
+			this.props.history.push('/')
+		});
+
+	}
+
+	renderTime(){
+		var time = new Date(this.state.game.time_ellapsed * 1000).toISOString().substr(11, 8);
+		return time;
+	}
+
+
+
+	render() {
+		return (
+			<React.Fragment>
+				<div className='time-ellapsed'>
+					{ this.state.game && typeof this.state.game.time_ellapsed != 'undefined' &&
+						this.renderTime()
+					}
+				</div>
+				<Minesweeper {...this.props}
+		          saveGame={ this.saveGame }
+		          renderGameInformation={ this.renderGameInformation } />
+		  </React.Fragment>
+		)
+	}
+}
+
+
+
+
+
+export default withRouter(MinesweeperContainer);
