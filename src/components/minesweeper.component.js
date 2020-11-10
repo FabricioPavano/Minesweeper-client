@@ -14,8 +14,9 @@ class Minesweeper extends Component {
 	constructor(props) {
 	  super(props);
 
-	  this.saveGame  = this.saveGame.bind(this)
-	  this.endGame   = this.endGame.bind(this)
+	  this.updateState  = this.updateState.bind(this)
+	  this.saveGame     = this.saveGame.bind(this)
+	  this.endGame      = this.endGame.bind(this)
 
 	  this.state = {
 	  	game: {},
@@ -23,6 +24,8 @@ class Minesweeper extends Component {
 	  };
 
 	}
+
+	
 
 	componentDidMount(){
 		const uuid = this.props.match.params.uuid
@@ -33,32 +36,52 @@ class Minesweeper extends Component {
 		})
 		.then( (data) => {
 
-			// Look out this fancy deconstruction
-			// let {boxes, ...game} = response
 
-			let boxes = data.state
+			let state_array = data.state
 
+			let state_hash = this.transformStateArrayToHash(state_array)
 
-			let boxes_object = {}
-
-			// Boxes come in an Array
-			// For faster lookups - this script stores the info in an object
-			// Which acts like a Hash - providing O(1) lookups
-
-			for (const box of boxes) {
-				boxes_object[box.row + ':' + box.col] = box
-			}
-
-			localStorage.setItem(data.uuid, JSON.stringify(data))
+			// saves the state on local storage too
+			localStorage.setItem(data.uuid, JSON.stringify(state_hash))
 
 			this.setState({
 				game: data,
-				boxes: boxes_object
-			}, () => { 	console.log(this.state); })
+				boxes: state_hash
+			})
 
 		})
 
 	}
+
+	shouldComponentUpdate(prevProps, prevState){
+
+		return true
+	}
+
+
+	// Boxes information come in an Array
+	// For faster lookups - this script stores the info in an object
+	// Which acts like a Hash - providing O(1) lookups
+	transformStateArrayToHash(state_array){
+		let boxes_hash = {}
+		for (const box of state_array) {
+			boxes_hash[box.row + ':' + box.col] = box
+		}
+		return boxes_hash;
+	}
+
+
+	// In order to send the state back to the backend
+	// We transform the state back to an array
+	transformStateHashToArray(state_hash){
+		let state_array = []
+		for (const property in state_hash) {
+			// We don't mind keeping the order of the boxes
+			state_array.push(state_hash[property])
+		}
+		return state_array;
+	}
+
 
 	saveGame(){
 
@@ -96,15 +119,15 @@ class Minesweeper extends Component {
 
 	}
 
-	// Updates the state of the game as the game progresses
-	// The state of the game is kept on a javascript object
+	// Updates the state of the game as the game progresses, on local storage
+	// The state of the game is kept on a serialized javascript object
 
 	// each affected box is is represented by an object:
 	/*
 	{
 		row: n,
 		col: m,
-		new_state: x
+		new_status: x
 	}
 	*/
 
@@ -114,9 +137,34 @@ class Minesweeper extends Component {
 	// It can also receive a single object
 	updateState(affectedBoxes){
 
+		let state = JSON.parse(localStorage.getItem(this.state.game.uuid))
+
+
+		// Applies the changes for each item of the array
+		// Notice setState is called only once for maximum performance
+		affectedBoxes.forEach( affectedBox => {
+
+			console.log('af', affectedBox)
+
+			let row = affectedBox.row
+			let col = affectedBox.col
+			let hash_key = row + ':' + col
+			let new_status = affectedBox.new_status
+
+			state = Object.assign(
+				state,
+				{ [hash_key]: { ...state[hash_key], status: new_status } }
+			)
+		})
+
+		// saves the state on local storage too
+		localStorage.setItem(this.state.game.uuid, JSON.stringify(state))
 
 
 	}
+
+
+
 
 	endGame(){
 		this.setState({ game: Object.assign({ended:true}, this.state.game)}, () => {
@@ -139,11 +187,13 @@ class Minesweeper extends Component {
 			let key = box.row + ':' + box.col
 			return <Box
 			          key={key}
+			          row={box.row}
+			          col={box.col}
 			          status={box.status}
 			          has_mine={ box.has_mine }
 			          adjacent={ box.adjacent }
 			          game_ended={ this.state.game.ended }
-			          updateState={ this.state.updateState }
+			          updateState={ this.updateState }
 			          endGame={ this.endGame }
 			        />
 		})
@@ -151,11 +201,43 @@ class Minesweeper extends Component {
 
 	}
 
+	// Shallow comparison of objects
+	// is enough for our purposes
+	objectsEqual(object1, object2){
+	  const keys1 = Object.keys(object1);
+	  const keys2 = Object.keys(object2);
+
+	  if (keys1.length !== keys2.length) {
+	    return false;
+	  }
+
+	  for (let key of keys1) {
+	    if (object1[key] !== object2[key]) {
+	      return false;
+	    }
+	  }
+
+  	return true;
+	}
+
+	arraysEqual(a, b) {
+	  if (a === b) return true;
+	  if (a == null || b == null) return false;
+	  if (a.length !== b.length) return false;
+
+	  // If you don't care about the order of the elements inside
+	  // the array, you should sort both arrays here.
+	  // Please note that calling sort on an array will modify that array.
+	  // you might want to clone your array first.
+
+	  for (var i = 0; i < a.length; ++i) {
+	    if (a[i] !== b[i]) return false;
+	  }
+	  return true;
+	}
+
 
 	render(){
-
-
-		console.log('Rendering!')
 
 		// Stores JSX boxes inside:
 		var rows = [];

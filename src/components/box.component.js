@@ -9,11 +9,17 @@ class Box extends Component {
 
 	  this.uncoverBox  = this.uncoverBox.bind(this)
 
+	  // Every box keeps its own state to avoid having to re-render every time
+	  // some one clicks on a box
+
 	  this.state = {
 	  	status: this.props.status,
 	  	value: ''
 	  };
 	}
+
+
+
 
 	uncoverBox(){
 
@@ -29,12 +35,44 @@ class Box extends Component {
 			this.props.endGame()
 		}
 		else{
+
+			// Updates state on general game (does not cause a re-render)
+			this.props.updateState([
+															{ row: this.props.row,
+				                       col: this.props.col,
+				                       new_status: 'uncovered'
+				                     },
+         											{ row: this.props.row + 1,
+                                col: this.props.col,
+                                new_status: 'uncovered'
+                              } ]
+				                     )
+
+			// Updates state on this particular box
 			this.setState({ status: 'uncovered', value: this.props.adjacent })
 		}
 
 	}
 
+	componentDidUpdate(prevProps, prevState) {
+
+		//Change status if prop changed
+	  if (this.props.status !== prevProps.status) {
+	    this.setState( { 'status': this.props.status })
+	  }
+
+	  if (this.props.status != 'covered' && prevState.status == 'covered')
+	  	this.setState( { 'value': this.props.adjacent })
+
+	}
+
+
 	render(){
+
+
+
+		console.info('Box rendered')
+
 		return (
 			<React.Fragment>
 				<div onClick={ this.uncoverBox } data-color={ 'color-' + this.props.adjacent } className={'box ' + this.state.status} >
