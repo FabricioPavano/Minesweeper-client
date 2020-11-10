@@ -387,8 +387,7 @@ class Minesweeper extends Component {
 						}
 
 						<br />
-						<br />
-						<div className='option-item' onClick={ this.retry } > -retry- </div>
+
 						<br />
 						<div className='option-item'> <Link to="/"> -exit- </Link></div>
 					</React.Fragment>
