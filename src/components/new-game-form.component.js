@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from "react-router-dom";
 import { withRouter } from 'react-router-dom'
 import API from '../services/api'
+import SimpleReactValidator from 'simple-react-validator';
 import '../styles/GameForm.css';
 
 
@@ -18,6 +19,21 @@ class NewGameForm extends Component {
 
 	  this.handleInputChange = this.handleInputChange.bind(this);
 	  this.createNewGame     = this.createNewGame.bind(this);
+
+	  this.validator = new SimpleReactValidator({
+
+	  	  // Validates the amount of mines is not superior to the amount of boxes
+	      validators: {
+	        mine_limit: {
+	          message: 'The amount of mines is too high',
+	          rule: (val, params, validator) => {
+	          	return false
+	          },
+	          required: true  // optional
+	        }
+	      }
+	    });
+
 	}
 
 	handleInputChange(event) {
@@ -32,13 +48,19 @@ class NewGameForm extends Component {
 
 	createNewGame = () => {
 
-		console.log('Starting New Game...', this.state);
 
 
-		API.create_new_game(this.state)
-			.then( (data) => {
-			  this.props.history.push('/play/' + data.uuid)
-			});
+		if (this.validator.allValid()) {
+
+			API.create_new_game(this.state)
+				.then( (data) => {
+				  this.props.history.push('/play/' + data.uuid)
+				});
+		}
+		else {
+		  this.validator.showMessages();
+		  this.forceUpdate();
+		}
 
 	}
 
@@ -58,6 +80,8 @@ class NewGameForm extends Component {
 			  	/>
 			  </div>
 
+			  { this.validator.message('rows', this.state.rows, 'required|numeric|min:3,num|max:50,num') }
+
 			  <div className="form-label">
 			  	Columns
 			  </div>
@@ -71,6 +95,7 @@ class NewGameForm extends Component {
 			  	/>
 			  </div>
 
+			  { this.validator.message('cols', this.state.cols, 'required|numeric|min:3,num|max:50,num') }
 
 			  <div className="form-label">
 			  	Mines
@@ -84,6 +109,10 @@ class NewGameForm extends Component {
 			  	  onChange={this.handleInputChange}
 			  	/>
 			  </div>
+
+
+			  { this.validator.message('mines', this.state.mines, 'required|numeric|min:3,num|max:' + (this.state.cols * this.state.rows - 1) + ',num') }
+
 			  <br />
 
 			  <div className="form-label start-game">

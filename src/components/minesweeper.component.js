@@ -387,7 +387,7 @@ class Minesweeper extends Component {
 						<br />
 
 						<br />
-						<div className='option-item'> <Link to="/"> -exit- </Link></div>
+						<div className='option-item'> <Link to="/menu"> -exit- </Link></div>
 					</React.Fragment>
 
 				)}

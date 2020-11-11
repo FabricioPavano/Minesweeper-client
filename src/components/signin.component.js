@@ -64,9 +64,6 @@ class SignIn extends Component {
 	render(){
 		return (
 
-
-
-
 			<div className="user-form">
 
 				{ this.state.login_error && (
