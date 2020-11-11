@@ -48,5 +48,31 @@
   color: red;
 }
 
+.greetings{
+  color: tomato;
+}
+
+.saved-games{
+  margin-top: 72px;
+}
+
+.menu-hr{
+  margin-top: 50px;
+  width: 30%;
+}
+
+.log-out{
+  margin-top: 30px;
+}
+
+.log-out h4{
+  cursor: pointer;
+}
+
+.back-btn{
+  cursor: pointer;
+}
+
+
 
 

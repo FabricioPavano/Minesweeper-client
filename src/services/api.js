@@ -1,11 +1,6 @@
 class API{
 	
-	static buildHeaders(){
-		
-
-		// return authHeaders;
-	}
-
+	// TODO: Remove duplicated code
 	static fetch_user_games(){
 
 		var authHeaders = new Headers();
@@ -91,7 +86,7 @@ class API{
 		myHeaders.append("Accept", "application/json")
 
 		const options =  {
-		  method: 'PUT',
+		  method: 'POST',
 		  headers: myHeaders,
    		body: JSON.stringify(data)
    	}

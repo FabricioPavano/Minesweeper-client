@@ -50,6 +50,7 @@ class SignIn extends Component {
 
 
   		  	localStorage.setItem('minesweeper-token', result['jwt'])
+  		  	localStorage.setItem('minesweeper-email', this.state.email)
   		  	this.props.history.push('/menu')
   		  })
   		  .catch(error => this.setState({ login_error: true }));
@@ -87,7 +88,6 @@ class SignIn extends Component {
 			  	/>
 			  </div>
 
-			   
 			  { this.validator.message('email', this.state.email, 'required|email') }
 
 			  <div className="form-label">
@@ -109,6 +109,10 @@ class SignIn extends Component {
 
 			  <div className="form-label start-game">
 			  	<a onClick={ () => this.signIn() }> Log in! </a>
+			  </div>
+			  <br />
+			  <div className="form-label">
+			  	<a className="back-btn" onClick={ () => this.props.history.push('/') }> Back </a>
 			  </div>
 			</div>
 		)

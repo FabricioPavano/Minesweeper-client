@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
+
 import API  from '../services/api'
 
 class Menu extends Component {
@@ -9,8 +10,9 @@ class Menu extends Component {
 	constructor(props){
 	  super(props);
 	  this.state = {
-	  	savedGames: []
-	  };
+	  	savedGames: [],
+	  	email: ''
+	  }
 	}
 
 	componentDidMount(){
@@ -18,6 +20,11 @@ class Menu extends Component {
 			.then(response => {
 				this.setState({savedGames : response.result})
 			})
+
+		this.setState({ email: localStorage['minesweeper-email'] })
+
+		this.logOut = this.logOut.bind(this);
+
 	}
 
 
@@ -28,17 +35,24 @@ class Menu extends Component {
 		return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
 	}
 
+	logOut(){
+		localStorage.removeItem('minesweeper-email')
+		localStorage.removeItem('minesweeper-token')
+		this.props.history.push('/')
+	}
+
 	render(){
 		return (
 			<div className="App">
 			  <header className="App-header">
+			    <h4> Hi <span className='greetings'>{ this.state.email } </span></h4>
 			    <h2> Minesweeper </h2>
 			  </header>
 
-			  <Link to="/new"><h2> New Game </h2></Link>
+			  <Link to="/new"><h1> New Game </h1></Link>
 
-			  <header className="App-header">
-			    <h3> Saved Games </h3>
+			  <header className="saved-games">
+			    <h2> Saved Games </h2>
 			  </header>
 
 			  { this.state.savedGames.map( (saved_game, index) => {
@@ -47,6 +61,15 @@ class Menu extends Component {
 
 			  })}
 
+			  { this.state.savedGames.length == 0 &&
+			  	"-empty-"
+			  }
+
+			  <hr className="menu-hr" />
+
+			  <header className="log-out">
+			    <h4 onClick={ this.logOut }> Log out </h4>
+			  </header>
 
 
 			</div>
@@ -55,4 +78,4 @@ class Menu extends Component {
 
 }
 
-export default Menu;
+export default withRouter(Menu);

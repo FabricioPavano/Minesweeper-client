@@ -87,6 +87,10 @@ class SignUp extends Component {
 			  <div className="form-label start-game">
 			  	<a onClick={ () => this.createUser() }> Sign up! </a>
 			  </div>
+			  <br />
+			  <div className="form-label">
+			  	<a className="back-btn" onClick={ () => this.props.history.push('/') }> Back </a>
+			  </div>
 			</div>
 		)
 	}
